@@ -4,6 +4,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.fitnesstracker.data.local.dao.WorkoutDao
+import com.fitnesstracker.data.local.dao.ExerciseDao
+import com.fitnesstracker.data.local.dao.ExerciseSetDao
 import com.fitnesstracker.data.local.entity.WorkoutEntity
 import com.fitnesstracker.data.local.entity.ExerciseEntity
 import com.fitnesstracker.data.local.entity.ExerciseSetEntity
@@ -20,4 +22,6 @@ import com.fitnesstracker.data.local.entity.ExerciseSetEntity
 @TypeConverters(DateConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
+    abstract fun exerciseDao(): ExerciseDao
+    abstract fun exerciseSetDao(): ExerciseSetDao
 }

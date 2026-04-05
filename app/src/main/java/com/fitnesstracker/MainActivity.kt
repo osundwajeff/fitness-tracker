@@ -4,44 +4,29 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.fitnesstracker.ui.navigation.FitnessTrackerNavHost
 import com.fitnesstracker.ui.theme.FitnessTrackerTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * The single Activity for the app.
+ *
+ * @AndroidEntryPoint: Required on every Activity/Fragment that uses Hilt injection.
+ * It generates the Hilt component that makes @Inject fields work in this Activity.
+ *
+ * The Activity itself is kept minimal - just sets up the theme and navigation host.
+ * All business logic lives in ViewModels; all UI logic lives in Composables.
+ */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             FitnessTrackerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                // FitnessTrackerNavHost owns the NavController and wires all screens together.
+                FitnessTrackerNavHost()
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FitnessTrackerTheme {
-        Greeting("Android")
     }
 }
