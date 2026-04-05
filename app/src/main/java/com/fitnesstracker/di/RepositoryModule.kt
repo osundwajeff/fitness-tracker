@@ -1,7 +1,9 @@
 package com.fitnesstracker.di
 
-import com.fitnesstracker.data.repository.WorkoutRepositoryImpl
-import com.fitnesstracker.domain.repository.WorkoutRepository
+import com.fitnesstracker.data.repository.WorkoutSessionRepositoryImpl
+import com.fitnesstracker.data.repository.WorkoutTemplateRepositoryImpl
+import com.fitnesstracker.domain.repository.WorkoutSessionRepository
+import com.fitnesstracker.domain.repository.WorkoutTemplateRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -9,31 +11,24 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /**
- * Hilt Module that binds repository interfaces to implementations.
- * 
- * @Module marks this as a dependency provider
- * @InstallIn(SingletonComponent::class) makes it available app-wide
- * 
- * @Binds is used for interfaces - it tells Hilt:
- * "When someone asks for WorkoutRepository, use WorkoutRepositoryImpl"
- * 
- * This is preferred over @Provides for interfaces because it's more efficient
- * (no extra wrapper function needed).
+ * Hilt module that binds repository interfaces to their implementations.
+ *
+ * @Binds is more efficient than @Provides for interface bindings — Room doesn't
+ * need to generate a wrapper function, it just resolves the type directly.
  */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
 
-    /**
-     * Binds the WorkoutRepository interface to its implementation.
-     * 
-     * The implementation (WorkoutRepositoryImpl) must have:
-     * - An @Inject annotated constructor
-     * - All its dependencies available in Hilt modules
-     */
     @Binds
     @Singleton
-    abstract fun bindWorkoutRepository(
-        workoutRepositoryImpl: WorkoutRepositoryImpl
-    ): WorkoutRepository
+    abstract fun bindWorkoutTemplateRepository(
+        impl: WorkoutTemplateRepositoryImpl
+    ): WorkoutTemplateRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWorkoutSessionRepository(
+        impl: WorkoutSessionRepositoryImpl
+    ): WorkoutSessionRepository
 }

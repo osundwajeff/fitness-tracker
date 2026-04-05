@@ -6,52 +6,68 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.fitnesstracker.ui.workout.WorkoutDetailScreen
-import com.fitnesstracker.ui.workout.WorkoutListScreen
+import com.fitnesstracker.ui.workout.ExerciseHistoryScreen
+import com.fitnesstracker.ui.workout.SessionDetailScreen
+import com.fitnesstracker.ui.workout.TemplateDetailScreen
+import com.fitnesstracker.ui.workout.TemplateListScreen
 
-/**
- * The root navigation graph for the app.
- *
- * NavHost wires together all screens and their routes.
- * rememberNavController() creates a NavController that survives recomposition.
- *
- * Each composable { } block is a navigation destination. The lambda receives a
- * NavBackStackEntry which gives access to route arguments.
- */
 @Composable
-fun FitnessTrackerNavHost() {
+public fun FitnessTrackerNavHost() {
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = Screen.WorkoutList.route
+        startDestination = Screen.TemplateList.route
     ) {
 
-        // -----------------------------------------------------------------------
-        // Workout List Screen
-        // -----------------------------------------------------------------------
-        composable(route = Screen.WorkoutList.route) {
-            WorkoutListScreen(
-                onNavigateToDetail = { workoutId ->
-                    navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
+        // Home: template list
+        composable(route = Screen.TemplateList.route) {
+            TemplateListScreen(
+                onNavigateToTemplate = { templateId ->
+                    navController.navigate(Screen.TemplateDetail.createRoute(templateId))
                 }
             )
         }
 
-        // -----------------------------------------------------------------------
-        // Workout Detail Screen
-        // -----------------------------------------------------------------------
+        // Template detail
         composable(
-            route = Screen.WorkoutDetail.route,
-            arguments = listOf(
-                // Declare the workoutId argument type so Navigation can parse it.
-                // NavType.LongType means it's a Long - Navigation extracts it from the route string.
-                navArgument(Screen.WorkoutDetail.ARG_WORKOUT_ID) {
-                    type = NavType.LongType
+            route = Screen.TemplateDetail.route,
+            arguments = listOf(navArgument(Screen.TemplateDetail.ARG_TEMPLATE_ID) {
+                type = NavType.LongType
+            })
+        ) {
+            TemplateDetailScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToSession = { sessionId ->
+                    navController.navigate(Screen.SessionDetail.createRoute(sessionId))
+                },
+                onNavigateToHistory = { templateId, exerciseName ->
+                    navController.navigate(Screen.ExerciseHistory.createRoute(templateId, exerciseName))
                 }
             )
+        }
+
+        // Session detail
+        composable(
+            route = Screen.SessionDetail.route,
+            arguments = listOf(navArgument(Screen.SessionDetail.ARG_SESSION_ID) {
+                type = NavType.LongType
+            })
         ) {
-            WorkoutDetailScreen(
+            SessionDetailScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Exercise history / progress
+        composable(
+            route = Screen.ExerciseHistory.route,
+            arguments = listOf(
+                navArgument(Screen.ExerciseHistory.ARG_TEMPLATE_ID) { type = NavType.LongType },
+                navArgument(Screen.ExerciseHistory.ARG_EXERCISE_NAME) { type = NavType.StringType }
+            )
+        ) {
+            ExerciseHistoryScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

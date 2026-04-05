@@ -9,30 +9,35 @@ import androidx.room.Update
 import com.fitnesstracker.data.local.entity.ExerciseSetEntity
 
 /**
- * Data Access Object for the exercise_sets table.
+ * DAO for the exercise_sets table.
  *
- * ExerciseSets are the individual rows of reps/weight within an exercise.
- * They are always fetched as a list belonging to an exercise - never standalone.
+ * Sets are always accessed as a list belonging to an ExerciseLog.
+ *
+ * The key progress query is getBestSetForLog — returns the heaviest set in
+ * a given exercise log, used to compute "best set per session" for progress history.
  */
 @Dao
 interface ExerciseSetDao {
 
-    /**
-     * Get all sets for a specific exercise - one-shot snapshot.
-     * Used in mappers when building the full Exercise domain model.
-     */
-    @Query("SELECT * FROM exercise_sets WHERE exerciseOwnerId = :exerciseId ORDER BY setId ASC")
-    suspend fun getSetsForExercise(exerciseId: Long): List<ExerciseSetEntity>
+    /** Get all sets for an exercise log (one-shot snapshot). */
+    @Query("SELECT * FROM exercise_sets WHERE exerciseLogId = :exerciseLogId ORDER BY setId ASC")
+    suspend fun getSetsForLog(exerciseLogId: Long): List<ExerciseSetEntity>
 
     /**
-     * Insert a single set and return its new row ID.
+     * Get the single heaviest set for an exercise log.
+     * Used when building the progress history: one data point per session.
      */
+    @Query("""
+        SELECT * FROM exercise_sets
+        WHERE exerciseLogId = :exerciseLogId
+        ORDER BY weight DESC, reps DESC
+        LIMIT 1
+    """)
+    suspend fun getBestSetForLog(exerciseLogId: Long): ExerciseSetEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSet(set: ExerciseSetEntity): Long
 
-    /**
-     * Insert multiple sets at once - used when saving a full exercise with sets.
-     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSets(sets: List<ExerciseSetEntity>): List<Long>
 
@@ -42,10 +47,7 @@ interface ExerciseSetDao {
     @Delete
     suspend fun deleteSet(set: ExerciseSetEntity)
 
-    /**
-     * Delete all sets belonging to an exercise.
-     * Useful when replacing all sets during an update.
-     */
-    @Query("DELETE FROM exercise_sets WHERE exerciseOwnerId = :exerciseId")
-    suspend fun deleteSetsForExercise(exerciseId: Long)
+    /** Delete all sets for an exercise log — used when replacing sets on update. */
+    @Query("DELETE FROM exercise_sets WHERE exerciseLogId = :exerciseLogId")
+    suspend fun deleteSetsForLog(exerciseLogId: Long)
 }
