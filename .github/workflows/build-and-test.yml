@@ -1,0 +1,49 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # AGP 9 + Gradle 9 require JDK 17 minimum.
+      # Temurin is the community build of OpenJDK - free and widely used in CI.
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      # Caches the Gradle wrapper, downloaded dependencies, and build outputs.
+      # After the first run, subsequent runs skip re-downloading (~1-2 min saved).
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # Compiles the full project. Catches missing imports, type errors, KSP issues.
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      # Runs JVM unit tests (no emulator needed).
+      # Results are uploaded as an artifact so you can inspect failures in the
+      # GitHub Actions UI even after the job finishes.
+      - name: Run unit tests
+        run: ./gradlew test --no-daemon
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: app/build/reports/tests/
+          retention-days: 7
